@@ -149,9 +149,27 @@ const addCapitalMarkers = () => {
     });
 };
 
+const saveUserLocation = (lat, lng, query) => {
+    localStorage.setItem('userLat', lat);
+    localStorage.setItem('userLng', lng);
+    localStorage.setItem('userQuery', query);
+};
+
+const loadUserLocation = () => {
+    const lat = localStorage.getItem('userLat');
+    const lng = localStorage.getItem('userLng');
+    const query = localStorage.getItem('userQuery');
+    
+    if (lat && lng) {
+        if (query) document.getElementById('locationInput').value = query;
+        performSearch(parseFloat(lat), parseFloat(lng), false);
+    }
+};
+
 window.addEventListener('load', () => {
     loadMinisteroData().then(() => {
         addCapitalMarkers();
+        loadUserLocation(); // Mostra subito l'ultima zona dell'utente
     });
 });
 
@@ -369,6 +387,7 @@ document.getElementById('searchBtn').addEventListener('click', async () => {
     if (!query) return alert(t('dyn_enter_valid'));
     try {
         const coords = await geocodeLocation(query);
+        saveUserLocation(coords.lat, coords.lng, query);
         performSearch(coords.lat, coords.lng, true);
     } catch (err) {
         document.getElementById('statusText').innerText = t('dyn_not_found');
@@ -379,8 +398,12 @@ document.getElementById('gpsBtn').addEventListener('click', () => {
     document.getElementById('statusText').innerText = t('dyn_gps_fetching');
     navigator.geolocation.getCurrentPosition(
         pos => {
-            performSearch(pos.coords.latitude, pos.coords.longitude, true);
-            document.getElementById('locationInput').value = t('dyn_current_pos');
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            const text = t('dyn_current_pos');
+            document.getElementById('locationInput').value = text;
+            saveUserLocation(lat, lng, text);
+            performSearch(lat, lng, true);
         },
         () => alert(t('dyn_gps_error'))
     );
@@ -389,7 +412,9 @@ document.getElementById('gpsBtn').addEventListener('click', () => {
 map.on('click', (e) => {
     const lat = e.latlng.lat;
     const lng = e.latlng.lng;
-    document.getElementById('locationInput').value = t('dyn_map_point');
+    const text = t('dyn_map_point');
+    document.getElementById('locationInput').value = text;
+    saveUserLocation(lat, lng, text);
     performSearch(lat, lng, true);
 });
 
