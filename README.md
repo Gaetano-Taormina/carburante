@@ -1,8 +1,7 @@
 # FuelFinder Italy ⛽
 
 ![FuelFinder Logo](assets/img/icon-192.png)
-
-*Read this in [Italiano](#italiano) 🇮🇹*
+*Read this in [Italiano](#italiano-)*
 
 **FuelFinder Italy** is a high-performance, installable Progressive Web Application (PWA) designed for searching, visualizing, and analyzing fuel stations across Italy. Leveraging official Open Data from the Italian Ministry, it guarantees real-time information with a modern UI and a fluid user experience across all devices.
 
@@ -70,9 +69,7 @@ All source code (Frontend, HTML, CSS, JavaScript, and Python scripts) of this pr
 ---
 ---
 
-<span id="italiano"></span>
-
-## FuelFinder Italy (Italiano) 🇮🇹
+## Italiano 🇮🇹
 
 **FuelFinder Italy** è una Progressive Web App (PWA) interattiva ad alte prestazioni progettata per la ricerca, visualizzazione e analisi geografica dei distributori di carburante sul territorio italiano. Sfruttando gli Open Data ufficiali del Ministero, garantisce informazioni in tempo reale con una UI moderna e un'esperienza utente fluida su qualsiasi dispositivo.
 
