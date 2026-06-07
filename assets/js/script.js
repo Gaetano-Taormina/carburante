@@ -149,13 +149,31 @@ const addCapitalMarkers = () => {
     });
 };
 
+const saveUserPreferences = () => {
+    localStorage.setItem('userFuel', document.getElementById('fuelTypeInput').value);
+    localStorage.setItem('userRadius', document.getElementById('radiusInput').value);
+    localStorage.setItem('userService', document.getElementById('serviceTypeInput').value);
+};
+
+const loadUserPreferences = () => {
+    const fuel = localStorage.getItem('userFuel');
+    const radius = localStorage.getItem('userRadius');
+    const service = localStorage.getItem('userService');
+    
+    if (fuel) document.getElementById('fuelTypeInput').value = fuel;
+    if (radius) document.getElementById('radiusInput').value = radius;
+    if (service) document.getElementById('serviceTypeInput').value = service;
+};
+
 const saveUserLocation = (lat, lng, query) => {
     localStorage.setItem('userLat', lat);
     localStorage.setItem('userLng', lng);
     localStorage.setItem('userQuery', query);
+    saveUserPreferences();
 };
 
 const loadUserLocation = () => {
+    loadUserPreferences(); // Carichiamo i filtri prima di lanciare la ricerca
     const lat = localStorage.getItem('userLat');
     const lng = localStorage.getItem('userLng');
     const query = localStorage.getItem('userQuery');
@@ -432,9 +450,19 @@ map.on('click', (e) => {
 
 ['fuelTypeInput', 'radiusInput', 'serviceTypeInput'].forEach(id => {
     document.getElementById(id).addEventListener('change', () => {
-        const loc = document.getElementById('locationInput').value;
-        if (loc === t('dyn_current_pos')) document.getElementById('gpsBtn').click();
-        else if (loc.trim().length > 0 && loc !== t('dyn_map_point')) document.getElementById('searchBtn').click();
+        saveUserPreferences(); // Salviamo la nuova scelta
+        
+        const savedLat = localStorage.getItem('userLat');
+        const savedLng = localStorage.getItem('userLng');
+        
+        // Se l'utente aveva già una posizione attiva (mappa, gps o città), aggiorniamo istantaneamente i risultati
+        if (savedLat && savedLng) {
+            performSearch(parseFloat(savedLat), parseFloat(savedLng), true);
+        } else {
+            // Fallback: se non c'è posizione salvata ma ha scritto qualcosa, simuliamo un click su Cerca
+            const loc = document.getElementById('locationInput').value;
+            if (loc.trim().length > 0) document.getElementById('searchBtn').click();
+        }
     });
 });
 
