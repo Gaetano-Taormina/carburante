@@ -1,6 +1,6 @@
 @echo off
 echo =======================================================
-echo     FuelFinder Italia - Avvio Server Locale
+echo     FuelFinder Italy - Avvio Server Locale
 echo =======================================================
 echo.
 echo I browser moderni (Chrome, Edge) bloccano per sicurezza (CORS) 

@@ -65,8 +65,9 @@ All source code (Frontend, HTML, CSS, JavaScript, and Python scripts) of this pr
 ---
 ---
 
-<a name="italiano"></a>
-# FuelFinder Italy (Italiano) 🇮🇹
+<span id="italiano"></span>
+
+## FuelFinder Italy (Italiano) 🇮🇹
 
 **FuelFinder Italy** è una Web Application interattiva ad alte prestazioni progettata per la ricerca, visualizzazione e analisi geografica dei distributori di carburante sul territorio italiano. Sfruttando gli Open Data ufficiali del Ministero, garantisce informazioni in tempo reale con una UI moderna e un'esperienza utente fluida.
 
