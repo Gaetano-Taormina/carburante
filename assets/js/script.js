@@ -1,7 +1,7 @@
 /* === THEME MANAGEMENT (LIGHT / DARK / SYSTEM) === */
 const themeBtn = document.getElementById('themeToggleBtn');
 const themeIcon = document.getElementById('themeIcon');
-let currentTheme = localStorage.getItem('theme') || 'light';
+let currentTheme = localStorage.getItem('theme') || 'dark';
 
 // We use ONE high-contrast map (OpenStreetMap). 
 // Dark theme is handled perfectly by CSS inverting colors.
