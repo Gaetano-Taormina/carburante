@@ -149,13 +149,17 @@ const addCapitalMarkers = () => {
     });
 };
 
+const isPWA = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
 const saveUserPreferences = () => {
+    if (!isPWA()) return;
     localStorage.setItem('userFuel', document.getElementById('fuelTypeInput').value);
     localStorage.setItem('userRadius', document.getElementById('radiusInput').value);
     localStorage.setItem('userService', document.getElementById('serviceTypeInput').value);
 };
 
 const loadUserPreferences = () => {
+    if (!isPWA()) return;
     const fuel = localStorage.getItem('userFuel');
     const radius = localStorage.getItem('userRadius');
     const service = localStorage.getItem('userService');
@@ -166,6 +170,7 @@ const loadUserPreferences = () => {
 };
 
 const saveUserLocation = (lat, lng, query) => {
+    if (!isPWA()) return;
     localStorage.setItem('userLat', lat);
     localStorage.setItem('userLng', lng);
     localStorage.setItem('userQuery', query);
@@ -174,6 +179,7 @@ const saveUserLocation = (lat, lng, query) => {
 
 const loadUserLocation = () => {
     loadUserPreferences(); // Carichiamo i filtri prima di lanciare la ricerca
+    if (!isPWA()) return;
     const lat = localStorage.getItem('userLat');
     const lng = localStorage.getItem('userLng');
     const query = localStorage.getItem('userQuery');
@@ -245,7 +251,7 @@ const performSearch = (lat, lng, isRouteEnabled = false) => {
     const canvasRenderer = L.canvas({ padding: 0.5 });
 
     L.circleMarker([lat, lng], { radius: 10, color: '#1e40af', fillColor: '#3b82f6', fillOpacity: 1, weight: 4, renderer: canvasRenderer })
-        .bindPopup(t('dyn_start_point')).addTo(markersLayer);
+        .bindPopup("myPosition").addTo(markersLayer);
 
     const radiusInKm = radiusDropdownValue + 2;
     const latMargin = radiusInKm / 111.0;

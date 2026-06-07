@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FuelFinder Italia - Prezzi Reali</title>
 
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛽</text></svg>">
+    <link rel="icon" href="assets/img/icon-192.png">
     
     <!-- PWA Settings -->
     <link rel="manifest" href="manifest.json">
@@ -44,8 +44,8 @@
         <div class="max-w-7xl mx-auto">
             <div class="flex justify-between items-start sm:items-center mb-5 gap-2">
                 <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-800 dark:text-white flex flex-wrap items-center gap-2 sm:gap-3">
-                    <div class="bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 p-2 rounded-2xl flex items-center justify-center shadow-sm">
-                        ⛽
+                    <div class="bg-white dark:bg-slate-900 p-1 rounded-xl flex items-center justify-center shadow-sm w-10 h-10 border border-slate-200 dark:border-slate-700">
+                        <img src="assets/img/icon-192.png" alt="Logo" class="w-full h-full object-contain rounded-lg">
                     </div>
                     <span>FuelFinder</span>
                     <span data-i18n="badge_dati" class="text-sm font-medium text-slate-700 dark:text-slate-300 hidden sm:inline bg-slate-100 dark:bg-slate-700 px-3 py-1 rounded-full border border-slate-300 dark:border-slate-600 shadow-sm">Dati Reali Ministeriali</span>
@@ -157,12 +157,12 @@
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm">
-                            <th data-i18n="th_pos" class="p-4 font-semibold text-center w-16">Pos.</th>
-                            <th data-i18n="th_brand" class="p-4 font-semibold">Distributore</th>
-                            <th data-i18n="th_address" class="p-4 font-semibold hidden sm:table-cell">Indirizzo</th>
-                            <th data-i18n="th_dist" class="p-4 font-semibold text-center">Distanza</th>
-                            <th data-i18n="th_price" class="p-4 font-semibold text-right">Prezzo</th>
+                        <tr class="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs sm:text-sm">
+                            <th data-i18n="th_pos" class="p-2 sm:p-4 font-semibold text-center w-10 sm:w-16">Pos.</th>
+                            <th data-i18n="th_brand" class="p-2 sm:p-4 font-semibold">Distributore</th>
+                            <th data-i18n="th_address" class="p-2 sm:p-4 font-semibold hidden md:table-cell">Indirizzo</th>
+                            <th data-i18n="th_dist" class="p-2 sm:p-4 font-semibold text-center hidden sm:table-cell">Distanza</th>
+                            <th data-i18n="th_price" class="p-2 sm:p-4 font-semibold text-right">Prezzo</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody" class="divide-y divide-slate-200 dark:divide-slate-700 text-slate-800 dark:text-slate-200">
