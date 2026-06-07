@@ -380,14 +380,14 @@ const performSearch = (lat, lng, isRouteEnabled = false) => {
         const tr = document.createElement('tr');
         tr.className = rowClass;
         tr.innerHTML = `
-            <td class="p-4 text-center text-lg font-bold text-slate-500">${medal}</td>
-            <td class="p-4">
-                <div class="font-bold text-slate-800 dark:text-white">${s.brand}</div>
-                <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">${s.name}</div>
+            <td class="p-2 sm:p-4 text-center text-base sm:text-lg font-bold text-slate-500">${medal}</td>
+            <td class="p-2 sm:p-4">
+                <div class="font-bold text-sm sm:text-base text-slate-800 dark:text-white">${s.brand}</div>
+                <div class="text-xs text-slate-500 dark:text-slate-400 mt-1">${s.name} <span class="sm:hidden font-medium text-blue-500 ml-1">(${s.distance.toFixed(1)}km)</span></div>
             </td>
-            <td class="p-4 text-sm text-slate-600 dark:text-slate-300 hidden sm:table-cell">${s.address}</td>
-            <td class="p-4 text-center text-sm font-medium text-blue-600 dark:text-blue-400">${s.distance.toFixed(1)} km</td>
-            <td class="p-4 text-right ${priceClass}">€ ${s.displayedPrice.toFixed(3)}</td>
+            <td class="p-2 sm:p-4 text-sm text-slate-600 dark:text-slate-300 hidden md:table-cell">${s.address}</td>
+            <td class="p-2 sm:p-4 text-center text-sm font-medium text-blue-600 dark:text-blue-400 hidden sm:table-cell">${s.distance.toFixed(1)} km</td>
+            <td class="p-2 sm:p-4 text-right ${priceClass} text-sm sm:text-base">€ ${s.displayedPrice.toFixed(3)}</td>
         `;
 
         tr.addEventListener('click', () => {
