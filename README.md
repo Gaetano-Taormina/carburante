@@ -1,36 +1,40 @@
 # FuelFinder Italy ⛽
 
-![FuelFinder Logo](assets/libs/images/marker-icon-2x.png)
+![FuelFinder Logo](assets/img/icon-192.png)
 
 *Read this in [Italiano](#italiano) 🇮🇹*
 
-**FuelFinder Italy** is a high-performance interactive Web Application designed for searching, visualizing, and analyzing fuel stations across Italy. Leveraging official Open Data from the Italian Ministry, it guarantees real-time information with a modern UI and a fluid user experience.
+**FuelFinder Italy** is a high-performance, installable Progressive Web Application (PWA) designed for searching, visualizing, and analyzing fuel stations across Italy. Leveraging official Open Data from the Italian Ministry, it guarantees real-time information with a modern UI and a fluid user experience across all devices.
 
 ---
 
 ## 🚀 Key Features & Technical Highlights
 
+- **Progressive Web App (PWA):** Fully installable on iOS, Android, Windows, and Mac. Functions like a native app with offline caching via Service Workers and a dedicated app icon.
+- **Persistent Local Preferences:** Automatically saves and remembers the user's last geographic search, fuel type, search radius, and service preferences using local storage (activates strictly within the PWA environment for privacy).
 - **Free Institutional Open Data Integration:** All data displayed by the application comes from the official datasets distributed by [MIMIT (Italian Ministry of Enterprises and Made in Italy)](https://www.mimit.gov.it/it/).
-- **Geospatial Rendering (Leaflet.js):** Dynamic real-time mapping utilizing clustering and geospatial bounding boxes to ensure the rendering of thousands of points without any framerate drop (60fps).
-- **Optimized Data Processing:** Raw CSV data provided by the Ministry is pre-processed locally or via serverless architecture into a single structured `dati.json` file. This eliminates the need for heavy browser-side parsing, guaranteeing almost instantaneous loading.
-- **"Glassmorphism" Design System with Tailwind CSS:** Ultra-modern UI based on the *Glassmorphism* paradigm, fully supporting dynamic **Dark Mode**. The project uses a local JIT (Just-In-Time) Tailwind CSS compiler for maximum lightness.
-- **Integrated Search Engine & Geolocation API:** Advanced navigation through direct ZIP code/City search (via Nominatim) or via real-time hardware GPS positioning.
-- **Custom CSS 3D Markers:** Uses mathematical logic and 3D CSS transformations (`rotateY`, `skewY`, `perspective`) to generate geographical flags that dynamically wave in response to animations, without using external frameworks.
+- **Geospatial Rendering & Smart Routing (Leaflet.js & OSRM):** Dynamic real-time mapping utilizing clustering and geospatial bounding boxes. Automatically calculates and draws the most convenient driving route using the OSRM engine.
+- **Optimized Data Processing:** Raw CSV data provided by the Ministry is pre-processed locally or via serverless architecture into a single structured `dati.json` file, eliminating heavy browser-side parsing.
+- **"Glassmorphism" Design System with Tailwind CSS:** Ultra-modern UI based on the *Glassmorphism* paradigm, fully supporting dynamic **Dark Mode**. Responsive tables and fluid layouts adapt perfectly from large desktop monitors down to the narrowest mobile screens.
+- **Integrated Search Engine & Geolocation API:** Advanced navigation through direct ZIP code/City search (via Nominatim) or via real-time hardware GPS positioning (requires HTTPS).
+- **Custom CSS 3D Markers:** Uses mathematical logic and 3D CSS transformations to generate geographical flags that dynamically wave in response to animations, without using heavy external graphical frameworks.
 - **Internationalization (i18n):** Automatically translates the UI to English or Italian based on the user's browser language.
 
 ---
 
 ## ⚡ How to Start the Project (IMPORTANT)
 
-Due to security reasons (CORS Policy), modern browsers prevent local JavaScript applications from reading local data files via simple double-click (`file:///` protocol).
+Due to security reasons (CORS Policy) and Geolocation API requirements, modern browsers restrict certain functionalities on local `file:///` protocols.
 
 To run the application correctly on your PC:
 
 1. Open the project folder.
 2. **Double-click on the `start.bat` file**.
 3. This powerful script will automatically perform two operations:
-   - **Data Sync & Processing:** It will instantly download the exact, up-to-date prices from the Ministry's server and process them directly into JSON for maximum speed.
-   - **Local Server:** It will start a very light local server (`localhost:8000`) and open your browser, allowing you to browse smoothly and without blocks.
+   - **Data Sync & Processing:** Instantly downloads the exact, up-to-date prices from the Ministry's server and processes them directly into JSON for maximum speed.
+   - **Local Server:** Starts a very light local server (`localhost:8000`) and opens your browser, allowing you to browse smoothly.
+
+*Note for mobile testing:* To use the hardware GPS feature on a mobile device, the application must be served over a secure `HTTPS` connection (e.g., publishing to GitHub Pages).
 
 ---
 
@@ -40,8 +44,9 @@ The application follows strict *Separation of Concerns (SoC)* principles and is 
 
 - **Frontend Core:** HTML5, Vanilla JavaScript (ES6+), CSS3
 - **CSS Framework:** Tailwind CSS v4 (Local CLI Compiler)
-- **Map Engine:** OpenStreetMap API (OSM) / Leaflet.js
-- **Data Processor Backend:** Python 3 (Fetch and transform CSV to optimized JSON)
+- **Map Engine & Routing:** OpenStreetMap API (OSM) / Leaflet.js / OSRM
+- **Backend Data Processor:** Python 3 (Fetch and transform CSV to optimized JSON)
+- **PWA Architecture:** Web App Manifest & Service Worker caching
 
 ---
 
@@ -69,29 +74,31 @@ All source code (Frontend, HTML, CSS, JavaScript, and Python scripts) of this pr
 
 ## FuelFinder Italy (Italiano) 🇮🇹
 
-**FuelFinder Italy** è una Web Application interattiva ad alte prestazioni progettata per la ricerca, visualizzazione e analisi geografica dei distributori di carburante sul territorio italiano. Sfruttando gli Open Data ufficiali del Ministero, garantisce informazioni in tempo reale con una UI moderna e un'esperienza utente fluida.
+**FuelFinder Italy** è una Progressive Web App (PWA) interattiva ad alte prestazioni progettata per la ricerca, visualizzazione e analisi geografica dei distributori di carburante sul territorio italiano. Sfruttando gli Open Data ufficiali del Ministero, garantisce informazioni in tempo reale con una UI moderna e un'esperienza utente fluida su qualsiasi dispositivo.
 
 ---
 
 ## 🚀 Punti di Forza e Caratteristiche Tecniche
 
+- **Progressive Web App (PWA):** Installabile nativamente su iOS, Android, Windows e Mac. Include caching offline tramite Service Worker e icona dedicata sulla schermata Home.
+- **Salvataggio Preferenze Locali:** Memorizza in modo intelligente l'ultima posizione cercata, il tipo di carburante, il raggio d'azione e le preferenze del servizio, ripristinando istantaneamente l'ultima sessione alla riapertura (attivo solo in modalità App per tutela della privacy).
 - **Integrazione Open Data Istituzionale gratuita:** Tutti i dati derivano dai dataset ufficiali distribuiti dal [MIMIT](https://www.mimit.gov.it/it/).
-- **Rendering Geospaziale (Leaflet.js):** Mappatura dinamica in tempo reale sfruttando clusterizzazioni e bounding box geospaziali a 60fps.
-- **Elaborazione Dati Ottimizzata:** I dati grezzi in CSV vengono pre-processati in un unico file `dati.json` strutturato. Questo elimina pesanti elaborazioni lato browser, garantendo un caricamento istantaneo.
-- **Design System "Glassmorphism" con Tailwind CSS:** Interfaccia utente iper-moderna con pieno supporto alla **Dark Mode** dinamica. Tailwind CSS compilato localmente.
-- **Motore di Ricerca & Geolocation API:** Navigazione tramite ricerca di CAP/Città o tramite posizionamento GPS hardware.
-- **Custom CSS 3D Markers:** Utilizzo di trasformazioni 3D in CSS per generare bandierine geografiche animate al vento.
+- **Rendering Geospaziale & Routing Intelligente (Leaflet.js & OSRM):** Mappatura dinamica con calcolo automatico e disegno su mappa del tragitto stradale più rapido per raggiungere il distributore scelto.
+- **Elaborazione Dati Ottimizzata:** I dati grezzi in CSV vengono pre-processati in un unico file `dati.json` strutturato per garantire caricamenti istantanei.
+- **Design System "Glassmorphism" con Tailwind CSS:** Interfaccia utente iper-moderna con pieno supporto alla **Dark Mode** dinamica e tabelle responsive che si adattano microscopicamente a tutti gli schermi mobili.
+- **Motore di Ricerca & Geolocation API:** Navigazione tramite ricerca di CAP/Città o tramite posizionamento GPS hardware (richiede HTTPS).
+- **Custom CSS 3D Markers:** Utilizzo di trasformazioni 3D in CSS per generare bandierine geografiche animate al vento in puro CSS.
 - **Internazionalizzazione (i18n):** Traduzione automatica dinamica basata sulla lingua nativa del browser dell'utente (Italiano / Inglese).
 
 ---
 
 ## ⚡ Come Avviare il Progetto (IMPORTANTE)
 
-Per via delle regole di sicurezza (CORS Policy), apri l'app in questo modo:
-
 1. Apri la cartella del progetto.
 2. **Fai doppio click sul file `start.bat`**.
 3. Questo script scaricherà gli ultimissimi prezzi dal Ministero e avvierà un server locale leggerissimo, aprendo automaticamente il browser.
+
+*Nota per il GPS:* I browser moderni bloccano il GPS se il sito non ha una connessione sicura (il lucchetto verde). Per usare la tua posizione reale da telefono, il progetto deve essere pubblicato online su un dominio HTTPS (es. GitHub Pages).
 
 ---
 
