@@ -33,6 +33,6 @@ jobs:
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action Bot"
-        git add assets/data/*.csv assets/data/dati.json
+        git add assets/data/dati.json
         git commit -m "Auto-Update: Dati MIMIT aggiornati" -a || echo "Nessuna modifica da pushare"
         git push
