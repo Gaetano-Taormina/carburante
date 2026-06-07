@@ -385,6 +385,18 @@ const performSearch = (lat, lng, isRouteEnabled = false) => {
 document.getElementById('searchBtn').addEventListener('click', async () => {
     const query = document.getElementById('locationInput').value.trim();
     if (!query) return alert(t('dyn_enter_valid'));
+    
+    // Se l'utente clicca "Cerca" ma c'è scritto "Posizione Attuale" o "Punto Mappa",
+    // usiamo le coordinate già salvate invece di cercare il testo su internet.
+    if (query === t('dyn_current_pos') || query === t('dyn_map_point')) {
+        const savedLat = localStorage.getItem('userLat');
+        const savedLng = localStorage.getItem('userLng');
+        if (savedLat && savedLng) {
+            performSearch(parseFloat(savedLat), parseFloat(savedLng), true);
+            return;
+        }
+    }
+
     try {
         const coords = await geocodeLocation(query);
         saveUserLocation(coords.lat, coords.lng, query);
