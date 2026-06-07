@@ -1,7 +1,9 @@
 import urllib.request
+import urllib.error
 import os
 import csv
 import json
+import time
 
 print("Inizio download dati MIMIT...")
 
@@ -25,12 +27,53 @@ headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
 }
 
+def ottieni_lista_proxy():
+    print("Recupero lista proxy gratuiti...")
+    # Recupera una lista di proxy HTTP anonimi
+    proxy_url = "https://api.proxyscrape.com/v2/?request=displayproxies&protocol=http&timeout=5000&country=all&ssl=all&anonymity=all"
+    try:
+        req = urllib.request.Request(proxy_url, headers=headers)
+        with urllib.request.urlopen(req, timeout=10) as response:
+            proxies = response.read().decode('utf-8').splitlines()
+            # Prendiamo i primi 30 proxy
+            return [p.strip() for p in proxies if p.strip()][:30]
+    except Exception as e:
+        print(f"Errore nel recupero proxy: {e}")
+        return []
+
 def scarica_file(url, path):
     print(f"Scaricando: {url}")
-    req = urllib.request.Request(url, headers=headers)
-    with urllib.request.urlopen(req, timeout=30) as response, open(path, 'wb') as out_file:
-        out_file.write(response.read())
-    print(f"Salvato in: {path} ({os.path.getsize(path) / 1024 / 1024:.2f} MB)")
+    
+    # 1. Tentativo Diretto (funziona sul tuo PC locale)
+    try:
+        req = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(req, timeout=15) as response, open(path, 'wb') as out_file:
+            out_file.write(response.read())
+        print(f"Salvato in: {path} ({os.path.getsize(path) / 1024 / 1024:.2f} MB) - [Connessione Diretta]")
+        return
+    except Exception as e:
+        print(f"Tentativo diretto fallito: {e}. Avvio modalità 'Fantasma' con Proxy...")
+
+    # 2. Tentativo con Proxy (per i server GitHub)
+    proxies = ottieni_lista_proxy()
+    if not proxies:
+        raise Exception("Impossibile scaricare: Nessun proxy disponibile e connessione diretta fallita.")
+        
+    for proxy in proxies:
+        print(f"Provo a scaricare tramite il proxy: {proxy}")
+        try:
+            proxy_handler = urllib.request.ProxyHandler({'http': proxy, 'https': proxy})
+            opener = urllib.request.build_opener(proxy_handler)
+            req = urllib.request.Request(url, headers=headers)
+            with opener.open(req, timeout=15) as response, open(path, 'wb') as out_file:
+                out_file.write(response.read())
+            print(f"Salvato in: {path} ({os.path.getsize(path) / 1024 / 1024:.2f} MB) - [Tramite Proxy {proxy}]")
+            return # Successo! Usciamo.
+        except Exception as e:
+            print(f"Proxy {proxy} fallito o troppo lento.")
+            
+    # Se arriviamo qui, abbiamo provato 30 proxy e hanno fallito tutti
+    raise Exception(f"Impossibile scaricare {url}. Tutti i 30 proxy testati hanno fallito.")
 
 def genera_json():
     print("Inizio generazione file JSON...")
