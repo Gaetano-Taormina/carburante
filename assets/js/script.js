@@ -1,8 +1,10 @@
 /* === THEME MANAGEMENT (LIGHT / DARK / SYSTEM) === */
 const themeBtn = document.getElementById('themeToggleBtn');
 const themeIcon = document.getElementById('themeIcon');
-let currentTheme = localStorage.getItem('theme') || 'system';
+let currentTheme = localStorage.getItem('theme') || 'light';
 
+// We use ONE high-contrast map (OpenStreetMap). 
+// Dark theme is handled perfectly by CSS inverting colors.
 const map = L.map('map', { 
     zoomControl: false,
     maxBounds: [[33.0, -5.0], [52.0, 25.0]],
@@ -11,41 +13,27 @@ const map = L.map('map', {
 }).setView([41.9028, 12.4964], 6);
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-// We use ONE high-contrast map (OpenStreetMap). 
-// Dark theme is handled perfectly by CSS inverting colors.
 const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
     maxZoom: 19, 
     attribution: '&copy; OpenStreetMap contributors' 
 }).addTo(map);
 
 const applyTheme = (theme) => {
-    let isDark = false;
-    if (theme === 'dark') isDark = true;
-    else if (theme === 'light') isDark = false;
-    else isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-    if (isDark) {
+    if (theme === 'dark') {
         document.documentElement.classList.add('dark');
+        themeIcon.innerText = '🌙';
     } else {
         document.documentElement.classList.remove('dark');
+        themeIcon.innerText = '☀️';
     }
-
-    if (theme === 'light') themeIcon.innerText = '☀️';
-    else if (theme === 'dark') themeIcon.innerText = '🌙';
-    else themeIcon.innerText = '💻';
 };
 
 themeBtn.addEventListener('click', () => {
-    if (currentTheme === 'system') currentTheme = 'light';
-    else if (currentTheme === 'light') currentTheme = 'dark';
-    else currentTheme = 'system';
+    currentTheme = currentTheme === 'light' ? 'dark' : 'light';
     localStorage.setItem('theme', currentTheme);
     applyTheme(currentTheme);
 });
 
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-    if (currentTheme === 'system') applyTheme('system');
-});
 applyTheme(currentTheme);
 
 
