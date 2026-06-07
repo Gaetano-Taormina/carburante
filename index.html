@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="it" id="html-root">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FuelFinder Italia - Prezzi Reali</title>
+
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛽</text></svg>">
+
+
+    
+    <!-- CSS Tailwind Compilato -->
+    <link rel="stylesheet" href="assets/css/tailwind.css" />
+
+    <!-- Script Traduzione (DEVE ESSERE CARICATO PRIMA) -->
+    <script src="assets/js/auto_translator.js"></script>
+
+    <!-- Librerie Locali -->
+    <link rel="stylesheet" href="assets/libs/leaflet.css" />
+    <script src="assets/libs/leaflet.js"></script>
+
+    <!-- CSS Separato (Cache Busting) -->
+    <link rel="stylesheet" href="assets/css/style.css?v=14" />
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-900 transition-colors duration-300 flex flex-col min-h-screen font-sans">
+    
+    <div id="loader" class="flex" role="status" aria-live="polite">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-600 mb-4"></div>
+        <h2 data-i18n="loader_h2" class="text-xl font-bold text-slate-800 dark:text-white">Caricamento dei dati ministeriali in corso...</h2>
+        <p data-i18n="loader_p" class="text-slate-500 dark:text-slate-400 mt-2">Questa operazione può richiedere qualche secondo...</p>
+    </div>
+
+    <header class="bg-white dark:bg-slate-800 transition-colors duration-300 shadow-lg p-5 z-20 relative rounded-b-[30px] mx-2 mt-2">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex justify-between items-center mb-5">
+                <h1 class="text-3xl font-extrabold text-slate-800 dark:text-white flex items-center gap-3">
+                    <div class="bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 p-2 rounded-2xl flex items-center justify-center shadow-sm">
+                        ⛽
+                    </div>
+                    FuelFinder 
+                    <span data-i18n="badge_dati" class="text-sm font-medium text-slate-700 dark:text-slate-300 hidden sm:inline bg-slate-100 dark:bg-slate-700 px-3 py-1 rounded-full border border-slate-300 dark:border-slate-600 shadow-sm">Dati Reali Ministeriali</span>
+                    <span data-i18n="badge_solo" class="text-sm font-bold text-green-800 dark:text-green-300 bg-green-50 dark:bg-green-900/50 px-3 py-1 rounded-full ml-2 border border-green-300 dark:border-green-600 shadow-sm hover:shadow-md transition-shadow">Solo in Italia 🇮🇹</span>
+                </h1>
+
+                <button id="themeToggleBtn" data-i18n-title="title_theme" class="p-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-md hover:shadow-lg hover:border-blue-400" title="Cambia Tema">
+                    <span id="themeIcon" class="text-xl">💻</span>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
+                <div class="md:col-span-2">
+                    <label for="locationInput" data-i18n="lbl_location" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1 perfect-align-label">CAP / Città</label>
+                    <div class="relative">
+                        <input type="text" id="locationInput" aria-label="Inserisci Città o CAP" data-i18n-placeholder="ph_location" placeholder="Es. 00100 o Roma (Solo località italiane)" class="w-full perfect-align-input pr-4 py-3 border border-slate-300 dark:border-slate-500 rounded-2xl bg-white dark:bg-slate-700 dark:text-white focus:bg-white dark:focus:bg-slate-600 focus:ring-4 focus:ring-blue-500/50 transition-all outline-none shadow-md">
+                    </div>
+                </div>
+
+                <div class="md:col-span-1 flex gap-2">
+                    <button id="searchBtn" data-i18n="btn_search" class="w-full bg-blue-600 hover:bg-blue-700 border border-blue-700 text-white font-black text-lg py-3 px-4 rounded-2xl shadow-lg transition-all hover:shadow-xl hover:-translate-y-0.5">Cerca</button>
+                    <button id="gpsBtn" data-i18n-title="title_gps" title="Usa GPS" class="bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 dark:hover:bg-slate-600 border border-slate-900 dark:border-slate-500 text-white font-bold py-3 px-4 rounded-2xl shadow-lg transition-all hover:shadow-xl hover:-translate-y-0.5 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="md:col-span-1">
+                    <label for="radiusInput" data-i18n="lbl_radius" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1 perfect-align-label">Distanza</label>
+                    <select id="radiusInput" class="w-full px-4 py-3 border border-slate-300 dark:border-slate-500 rounded-2xl bg-white dark:bg-slate-700 dark:text-white focus:bg-white dark:focus:bg-slate-600 focus:ring-4 focus:ring-blue-500/50 outline-none shadow-md cursor-pointer transition-colors hover:border-blue-400 font-medium">
+                        <option value="3">3 km</option>
+                        <option value="5" selected>5 km</option>
+                        <option value="10">10 km</option>
+                        <option value="20">20 km</option>
+                    </select>
+                </div>
+
+                <div class="md:col-span-1">
+                    <label for="fuelTypeInput" data-i18n="lbl_fuel" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1 perfect-align-label">Carburante</label>
+                    <select id="fuelTypeInput" class="w-full px-4 py-3 border border-slate-300 dark:border-slate-500 rounded-2xl bg-white dark:bg-slate-700 dark:text-white focus:bg-white dark:focus:bg-slate-600 focus:ring-4 focus:ring-blue-500/50 outline-none shadow-md cursor-pointer transition-colors hover:border-blue-400 font-medium">
+                        <option value="Benzina" data-i18n="fuel_gasoline">Benzina</option>
+                        <option value="Gasolio" data-i18n="fuel_diesel">Gasolio</option>
+                        <option value="GPL" data-i18n="fuel_lpg">GPL</option>
+                        <option value="Metano" data-i18n="fuel_methane">Metano</option>
+                    </select>
+                </div>
+
+                <div class="md:col-span-1">
+                    <label for="serviceTypeInput" data-i18n="lbl_service" class="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1 pl-2">Servizio</label>
+                    <select id="serviceTypeInput" class="w-full px-4 py-3 border border-slate-300 dark:border-slate-500 rounded-2xl bg-white dark:bg-slate-700 dark:text-white focus:bg-white dark:focus:bg-slate-600 focus:ring-4 focus:ring-blue-500/50 outline-none shadow-md cursor-pointer transition-colors hover:border-blue-400 font-medium">
+                        <option value="1" selected data-i18n="service_self">Self Service</option>
+                        <option value="0" data-i18n="service_served">Servito</option>
+                        <option value="entrambi" data-i18n="service_both">Entrambi</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mt-4 flex justify-between items-center pl-2">
+                <span id="statusText" data-i18n-html="status_ready" class="text-sm font-medium text-slate-500 dark:text-slate-400" aria-live="polite">
+                    I dati sono pronti. Cerca, usa il GPS, oppure <strong class="text-blue-500">clicca direttamente sulla mappa</strong>.
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <main class="p-4 relative flex flex-col max-w-7xl mx-auto w-full flex-grow">
+        <section id="map" class="w-full h-full min-h-[600px] rounded-[30px] shadow-lg overflow-hidden border-2 border-slate-200 dark:border-slate-700 transition-colors" aria-label="Mappa dei distributori"></section>
+
+        <aside id="routePanel" class="hidden absolute bottom-8 left-8 z-[9999] bg-white/95 dark:bg-slate-800/95 backdrop-blur-md p-5 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-700 min-w-[280px] max-w-sm transition-all duration-300" aria-label="Dettagli itinerario consigliato">
+            <div class="flex items-center gap-2 mb-3">
+                <span class="text-2xl">👑</span>
+                <h3 data-i18n="rp_title" class="font-bold text-lg text-slate-800 dark:text-white leading-tight">Scelta Consigliata</h3>
+            </div>
+            <div class="space-y-2 text-sm text-slate-600 dark:text-slate-300">
+                <div class="flex justify-between border-b border-slate-100 dark:border-slate-700 pb-1">
+                    <span data-i18n="rp_brand" class="font-medium">Marchio:</span>
+                    <span id="rp-brand" class="font-bold text-slate-800 dark:text-white">--</span>
+                </div>
+                <div class="flex justify-between border-b border-slate-100 dark:border-slate-700 pb-1 bg-amber-50 dark:bg-amber-900/30 -mx-2 px-2 rounded-lg">
+                    <span data-i18n="rp_price" class="font-medium text-amber-800 dark:text-amber-400">Prezzo:</span>
+                    <span id="rp-price" class="font-extrabold text-amber-600 dark:text-amber-500 text-base">--</span>
+                </div>
+                <div class="flex justify-between pt-2">
+                    <span data-i18n="rp_dist" class="font-medium flex items-center gap-1 text-blue-600 dark:text-blue-400">📍 Distanza:</span>
+                    <span id="rp-distance" class="font-bold text-slate-800 dark:text-white">-- km</span>
+                </div>
+                <div class="flex justify-between">
+                    <span data-i18n="rp_time" class="font-medium flex items-center gap-1 text-blue-600 dark:text-blue-400">⏱️ Tempo stimato:</span>
+                    <span id="rp-time" class="font-bold text-slate-800 dark:text-white">-- min</span>
+                </div>
+            </div>
+            <button onclick="document.getElementById('routePanel').classList.add('hidden')" data-i18n="btn_close" class="mt-4 w-full bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 text-xs font-bold py-2 rounded-xl transition-colors">Chiudi Pannello</button>
+        </aside>
+    </main>
+
+    <footer class="mt-8 mb-4 text-center text-sm text-slate-500 dark:text-slate-400">
+        <p data-i18n-html="footer_text">Progetto Didattico - Dati forniti dal <a href="https://www.mimit.gov.it/it/" target="_blank" rel="noopener noreferrer" class="font-bold hover:text-blue-500 transition-colors">MIMIT</a> (Open Data gratis)</p>
+    </footer>
+
+    <section class="px-4 pb-8 max-w-7xl mx-auto w-full hidden" id="tableContainer">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-lg overflow-hidden border border-slate-200 dark:border-slate-700 transition-colors">
+            <div class="p-4 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                <h2 data-i18n-html="table_title" class="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                    <span>🏆</span> Classifica Migliori Prezzi
+                </h2>
+                <span id="tableCount" class="text-sm font-medium text-slate-500 dark:text-slate-400 bg-slate-200 dark:bg-slate-700 px-3 py-1 rounded-full"></span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-sm">
+                            <th data-i18n="th_pos" class="p-4 font-semibold text-center w-16">Pos.</th>
+                            <th data-i18n="th_brand" class="p-4 font-semibold">Distributore</th>
+                            <th data-i18n="th_address" class="p-4 font-semibold hidden sm:table-cell">Indirizzo</th>
+                            <th data-i18n="th_dist" class="p-4 font-semibold text-center">Distanza</th>
+                            <th data-i18n="th_price" class="p-4 font-semibold text-right">Prezzo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="divide-y divide-slate-200 dark:divide-slate-700 text-slate-800 dark:text-slate-200">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- JS Separato -->
+    <script src="assets/js/script.js"></script>
+</body>
+
+</html>

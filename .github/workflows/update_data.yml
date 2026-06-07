@@ -1,0 +1,38 @@
+name: Aggiornamento Quotidiano Dati Carburanti
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  schedule:
+    # Esegue ogni mattina alle 6:00 (ora UTC)
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    # Permette di avviare l'aggiornamento manualmente dal pannello "Actions" su GitHub
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    
+    # Diamo i permessi al bot di GitHub per scrivere nella repository
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout del codice
+      uses: actions/checkout@v3
+
+    - name: Configurazione Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Download Dati dal Ministero
+      run: python assets/py/update_mimit.py
+
+    - name: Commit e Push delle modifiche
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action Bot"
+        git add assets/data/*.csv assets/data/dati.json
+        git commit -m "Auto-Update: Dati MIMIT aggiornati" -a || echo "Nessuna modifica da pushare"
+        git push

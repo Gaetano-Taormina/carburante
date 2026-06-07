@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+@source "../../index.html";
+@source "../js/**/*.js";
+
+/* Abilita il Dark Mode basato sulla classe CSS ".dark" (come in v3) invece della media query di sistema */
+@variant dark (&:where(.dark, .dark *));

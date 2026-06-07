@@ -1,0 +1,42 @@
+# Ignora eseguibili di Tailwind (inutili nel repo, pesanti da committare)
+assets/tailwind/*.exe
+
+# Ignora cache di Python e ambienti virtuali (sicurezza e pulizia)
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+env/
+
+# File di configurazione dell'ambiente locale e chiavi (Sicurezza)
+.env
+.env.local
+.env.*
+*.pem
+*.key
+
+# Ignora cartelle dei package manager (nel caso venissero aggiunti)
+node_modules/
+
+# File temporanei dell'editor o del sistema operativo (Pulizia)
+.vscode/
+.idea/
+.DS_Store
+._*
+.AppleDouble
+.LSOverride
+Thumbs.db
+desktop.ini
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.bak
+*.tmp
+
+# DATI GREZZI DEL MINISTERO:
+# Ignoriamo i file CSV perché pesano moltissimo e cambiano ogni giorno. 
+# Caricarli su GitHub riempirebbe inutilmente lo spazio del repository (rischio bloat).
+# Conserviamo solo il file `assets/data/dati.json` elaborato e ottimizzato.
+assets/data/*.csv

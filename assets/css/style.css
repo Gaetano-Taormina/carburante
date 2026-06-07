@@ -1,0 +1,305 @@
+/* Mappa meno ingombrante! */
+#map {
+    height: 45vh; /* Ridotto per non occupare tutto lo schermo */
+    min-height: 350px;
+    z-index: 10;
+    cursor: crosshair;
+}
+
+/* Trucco per Tema Scuro ad alto contrasto per le strade */
+html.dark .leaflet-tile-pane {
+    filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
+
+/* Allineamento millimetrico per far combaciare etichette e input con il testo delle select */
+.perfect-align-label {
+    padding-left: 18px !important;
+}
+.perfect-align-input {
+    padding-left: 17px !important;
+}
+
+.price-marker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    border-radius: 9999px;
+    padding: 6px 12px;
+    border: 2px solid white;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    font-size: 13px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    white-space: nowrap;
+    transition: opacity 0.3s ease, transform 0.2s ease;
+}
+
+.dark .price-marker {
+    border-color: #1e293b;
+}
+
+.price-marker:hover {
+    opacity: 1 !important;
+    z-index: 9999 !important;
+    transform: scale(1.1);
+}
+
+.marker-cheap { background-color: #10b981; }
+.marker-expensive { background-color: #ef4444; }
+.marker-average { background-color: #3b82f6; }
+
+.marker-best {
+    background-color: #f59e0b !important;
+    border-color: #fbbf24 !important;
+    transform: scale(1.25);
+    font-size: 15px;
+    padding: 8px 14px;
+    border-radius: 9999px;
+    z-index: 10000 !important;
+    animation: pulse-gold 1.5s infinite;
+}
+
+.marker-best:hover {
+    transform: scale(1.35);
+}
+
+@keyframes pulse-gold {
+    0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.6); }
+    70% { box-shadow: 0 0 0 15px rgba(245, 158, 11, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+}
+
+.price-marker::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px 6px 0;
+    border-style: solid;
+    border-color: inherit;
+    border-bottom-color: transparent !important;
+    border-left-color: transparent !important;
+    border-right-color: transparent !important;
+}
+
+#loader {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.dark #loader {
+    background: rgba(15, 23, 42, 0.9);
+}
+
+.leaflet-popup-content-wrapper {
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+html.dark .leaflet-popup-content-wrapper,
+html.dark .leaflet-popup-tip {
+    background-color: #1e293b;
+    color: #f8fafc;
+}
+
+html.dark .leaflet-control-zoom-in,
+html.dark .leaflet-control-zoom-out {
+    background-color: #1e293b;
+    color: #f8fafc;
+    border-color: #334155;
+}
+
+html.dark .leaflet-control-zoom-in:hover,
+html.dark .leaflet-control-zoom-out:hover {
+    background-color: #334155;
+}
+
+/* Maschera leggerissima per i paesi "lontani" */
+.world-mask-subtle {
+    fill: #94a3b8; /* Grigio-azzurro per oscurare in modo visibile nel tema chiaro */
+    fill-opacity: 0.4; /* Visibile ma non eccessivamente scuro */
+    stroke: none;
+    pointer-events: none !important;
+}
+
+html.dark .world-mask-subtle {
+    fill: #0f172a; /* Grigio bluastro nebbia in dark mode */
+    fill-opacity: 0.55; /* Visibile in dark mode */
+}
+
+/* Stile per i paesi confinanti (interattivi) */
+.neighbor-country {
+    fill: #3b82f6; /* Leggero tocco di blu */
+    fill-opacity: 0.05; /* Quasi invisibile ma presente */
+    stroke: #3b82f6;
+    stroke-width: 1.5;
+    stroke-opacity: 0.3;
+    stroke-dasharray: 5, 5; /* Bordo tratteggiato in stile "zona cliccabile" */
+    pointer-events: auto; /* Sempre cliccabili */
+    outline: none;
+    transition: all 0.3s ease;
+    cursor: pointer; /* Cambia l'icona del mouse */
+}
+
+.neighbor-country:hover {
+    fill-opacity: 0.15; /* Si accende quando ci passi sopra */
+    stroke-opacity: 0.8;
+}
+
+/* Modalità scura per i paesi confinanti */
+html.dark .neighbor-country {
+    fill: #60a5fa;
+    stroke: #60a5fa;
+    fill-opacity: 0.05;
+    stroke-opacity: 0.3;
+}
+html.dark .neighbor-country:hover {
+    fill-opacity: 0.15;
+    stroke-opacity: 0.8;
+}
+
+/* Animazione ondeggiamento al vento per la bandiera */
+/* === STILI DINAMICI PER LE BANDIERE (SPOSTATI DA INLINE) === */
+.flag-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+.flag-it { transform-origin: bottom left; transform: rotate(12deg); }
+.flag-sm { transform-origin: bottom left; transform: rotate(8deg); }
+.flag-va { transform-origin: bottom right; transform: rotate(-15deg); }
+.flag-fr { transform-origin: bottom left; transform: rotate(-5deg); }
+.flag-ch { transform-origin: bottom left; transform: rotate(5deg); }
+.flag-at { transform-origin: bottom left; transform: rotate(10deg); }
+.flag-si { transform-origin: bottom left; transform: rotate(-8deg); }
+
+.popup-bg-blur { filter: blur(1px); }
+.popup-bg-it { background-image: url('../img/it.png'); }
+.popup-bg-sm { background-image: url('../img/sm.png'); }
+.popup-bg-va { background-image: url('../img/va.png'); }
+.popup-bg-fr { background-image: url('../img/fr.png'); }
+.popup-bg-ch { background-image: url('../img/ch.png'); }
+.popup-bg-at { background-image: url('../img/at.png'); }
+.popup-bg-si { background-image: url('../img/si.png'); }
+
+@keyframes wave-flag {
+    0%, 100% { transform: rotateY(-5deg) skewY(0deg); }
+    50% { transform: rotateY(18deg) skewY(3deg); }
+}
+
+@keyframes wave-flag-mirrored {
+    0%, 100% { transform: rotateY(5deg) skewY(0deg); }
+    50% { transform: rotateY(-18deg) skewY(-3deg); }
+}
+
+.animate-wave {
+    animation: wave-flag 2s ease-in-out infinite;
+    transform-origin: left center;
+}
+
+.animate-wave-mirrored {
+    animation: wave-flag-mirrored 2s ease-in-out infinite;
+    transform-origin: right center;
+}
+
+.custom-capital-container {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+/* === STILI PER MARKER BANDIERE CAPITALI === */
+.flag-marker-wrapper {
+    position: relative;
+    width: 48px;
+    height: 56px;
+    cursor: pointer;
+    z-index: 50;
+}
+
+.flag-pole {
+    position: absolute;
+    bottom: 0;
+    width: 4px;
+    height: 48px;
+    border-radius: 4px;
+    z-index: 15;
+    background-color: #475569; /* Slate 600 - Colore solido e opaco */
+    border: 1px solid #1e293b; /* Bordo definito per l'asta */
+    box-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+}
+
+html.dark .flag-pole {
+    background-color: #94a3b8; /* Slate 400 */
+    border-color: #f1f5f9;
+}
+
+.flag-pole.normal { left: 0; }
+.flag-pole.mirrored { right: 0; }
+
+.flag-finial {
+    position: absolute;
+    top: 4px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #fde047, #ca8a04);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    z-index: 20;
+}
+
+.flag-finial.normal { left: -1.5px; }
+.flag-finial.mirrored { right: -1.5px; }
+
+.flag-fabric {
+    position: absolute;
+    top: 8px;
+    width: 34px;
+    height: 22px;
+    overflow: hidden;
+    z-index: 10;
+}
+
+.flag-fabric.normal {
+    left: 1.5px;
+    border-radius: 0 8px 8px 0;
+}
+
+.flag-fabric.mirrored {
+    right: 1.5px;
+    border-radius: 8px 0 0 8px;
+}
+
+/* === FIX ESTREMO SOLO PER VATICANO (MODERATO) === */
+.flag-va .flag-fabric {
+    right: -1px !important;
+    width: 32px !important;
+}
+
+.flag-va .flag-image {
+    width: 120% !important;
+    max-width: none !important;
+    transform: scale(1.2) scaleX(-1) translateX(-4%) !important; /* -4% espone la parte gialla pur mantenendo zero spazi vuoti */
+}
+
+.flag-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: inline-block;
+}
+
+.flag-image.mirrored {
+    transform: scaleX(-1);
+}
