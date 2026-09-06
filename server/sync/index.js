@@ -9,6 +9,11 @@ import { initSchema, getLastModified, loadExistingData, applyChanges, setLastMod
 import { processStationsDiff, processPricesDiff, processDeletions } from "./processor.js";
 
 export async function sync(dbClient, retries = 8, options = {}) {
+  if (process.env.MAINTENANCE_MODE === 'true') {
+    console.warn("[Sync] Operazione bloccata: Sito in Maintenance Mode per protezione quota Turso.");
+    return;
+  }
+
   if (!dbClient) {
     const DB_URL = process.env.TURSO_DATABASE_URL || "file:" + path.join(process.env.DATA_DIR || path.join(process.cwd(), "server"), "database.sqlite");
     const DB_TOKEN = process.env.TURSO_AUTH_TOKEN;

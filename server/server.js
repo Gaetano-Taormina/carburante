@@ -6,6 +6,7 @@ import { createClient } from '@libsql/client';
 import path from 'path';
 import fs from 'fs';
 import 'dotenv/config';
+import { fetchTursoUsage } from './services/quotaService.js';
 
 // --- GESTIONE ERRORI DI SISTEMA ---
 process.on('uncaughtException', (err) => {
@@ -234,6 +235,20 @@ async function initServer() {
     try {
         await setupDatabase();
         await setAnalyticsDb(db);
+        
+        // Controllo live quota Turso in background
+        fetchTursoUsage().then(async (usage) => {
+            if (usage) {
+                console.log(`[INFO] Turso Quota Status: ${usage.rowsRead.toLocaleString()} Reads (${usage.pctRead}%), ${usage.rowsWritten.toLocaleString()} Writes (${usage.pctWritten}%), Syncs: ${(usage.bytesSynced/1024/1024).toFixed(1)}MB (${usage.pctSynced}%)`);
+                if (usage.isEmergency) {
+                    console.warn("[EMERGENCY] Soglia del 95% raggiunta su Turso all'avvio. Attivazione Maintenance Mode.");
+                    process.env.MAINTENANCE_MODE = 'true';
+                } else if (usage.isCritical) {
+                    console.warn("[WARN] Quota Turso elevata all'avvio (>80%). Attivazione replica locale.");
+                    await switchToLocalReplica();
+                }
+            }
+        }).catch(() => {});
         
         // --- API ROUTES ---
         setupApiRoutes(app, db);
@@ -672,10 +687,10 @@ app.use(async (req, res) => {
                     "@context": "https://schema.org",
                     "@type": "WebSite",
                     "name": "FuelFinder Italy",
-                    "url": "https://fuelfinder-msn8.onrender.com/",
+                    "url": `https://${req.get('host')}/`,
                     "potentialAction": {
                         "@type": "SearchAction",
-                        "target": `https://fuelfinder-msn8.onrender.com/${lang}/${lang === 'it' ? 'citta' : 'city'}/{search_term_string}`,
+                        "target": `https://${req.get('host')}/${lang}/${lang === 'it' ? 'citta' : 'city'}/{search_term_string}`,
                         "query-input": "required name=search_term_string"
                     }
                 },
@@ -683,8 +698,8 @@ app.use(async (req, res) => {
                     "@context": "https://schema.org",
                     "@type": "Organization",
                     "name": "FuelFinder",
-                    "url": "https://fuelfinder-msn8.onrender.com/",
-                    "logo": "https://fuelfinder-msn8.onrender.com/assets/img/icon-512.png",
+                    "url": `https://${req.get('host')}/`,
+                    "logo": `https://${req.get('host')}/assets/img/icon-512.png`,
                     "description": "Piattaforma gratuita per confrontare i prezzi del carburante in Italia."
                 },
                 {
@@ -695,13 +710,13 @@ app.use(async (req, res) => {
                             "@type": "ListItem",
                             "position": 1,
                             "name": "Home",
-                            "item": "https://fuelfinder-msn8.onrender.com/"
+                            "item": `https://${req.get('host')}/`
                         },
                         {
                             "@type": "ListItem",
                             "position": 2,
                             "name": lang === 'it' ? "Italia" : "Italy",
-                            "item": `https://fuelfinder-msn8.onrender.com/${lang}`
+                            "item": `https://${req.get('host')}/${lang}`
                         }
                     ]
                 }
@@ -876,4 +891,45 @@ setInterval(async () => {
         }
     }
 }, 1000 * 60 * 30);
+
+// --- AUTO-SWITCH A REPLICA LOCALE SU SOGLIA CRITICA ---
+async function switchToLocalReplica() {
+    console.warn("[FAILOVER] Attivazione modalità replica locale per protezione quota Turso...");
+    try {
+        if (syncUrl && (syncUrl.startsWith('libsql://') || syncUrl.startsWith('https://'))) {
+            const localOptions = {
+                url: `file:${localDbPath}`,
+                syncUrl: syncUrl,
+                authToken: DB_TOKEN
+            };
+            const localClient = createClient(localOptions);
+            await localClient.sync();
+            db = localClient;
+            console.log("[FAILOVER] Replica locale attiva con successo. Tutte le query sono ora servite localmente (0 read remoti).");
+        }
+    } catch (e) {
+        console.warn("[FAILOVER] Impossibile sincronizzare replica, fallback a SQLite locale esistente:", e.message);
+        try {
+            db = createClient({ url: `file:${localDbPath}` });
+        } catch {}
+    }
+}
+
+// --- MONITORAGGIO PERIODICO QUOTA TURSO (OGNI 2 ORE) ---
+setInterval(async () => {
+    try {
+        const usage = await fetchTursoUsage();
+        if (usage) {
+            if (usage.isEmergency) {
+                console.warn(`[EMERGENCY] Soglia del 95% raggiunta su Turso (Syncs: ${usage.pctSynced}%, Reads: ${usage.pctRead}%, Writes: ${usage.pctWritten}%). Attivazione Maintenance Mode e blocco sync.`);
+                process.env.MAINTENANCE_MODE = 'true';
+            } else if (usage.isCritical) {
+                console.warn(`[WARN] Quota Turso elevata (>80%): ${usage.pctRead}% Read, ${usage.pctWritten}% Write. Avvio switch a replica locale.`);
+                await switchToLocalReplica();
+            }
+        }
+    } catch {}
+}, 1000 * 60 * 60 * 2);
+
+
 

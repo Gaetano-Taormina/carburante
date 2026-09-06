@@ -54,35 +54,46 @@ const rl = readline.createInterface({
 
         if (res.rows.length === 0) {
             console.log('Stats DB is empty.');
-            process.exit(0);
+        } else {
+            const rowsToShow = res.rows.slice(0, daysLimit);
+            
+            let totalVisits = 0;
+            let totalUnique = 0;
+            let totalSearches = 0;
+
+            rowsToShow.forEach(row => {
+                const uniqueUsers = row.uniqueIps ? JSON.parse(row.uniqueIps).length : 0;
+                totalVisits += (row.visits || 0);
+                totalUnique += uniqueUsers;
+                totalSearches += (row.searches || 0);
+                
+                console.log(`  Date: ${row.date}`);
+                console.log(`    Total Visits:    ${row.visits || 0}`);
+                console.log(`    Unique Visitors: ${uniqueUsers}`);
+                console.log(`    Searches:   ${row.searches || 0}`);
+                console.log('---------------------------------------------');
+            });
+            
+            console.log(`\nSOMMARIO TOTALI (Ultimi ${rowsToShow.length} giorni registrati)`);
+            console.log(`=============================================`);
+            console.log(`    Visite Totali:    ${totalVisits}`);
+            console.log(`    Visitatori Unici: ${totalUnique} (stimati)`);
+            console.log(`    Total Searches:  ${totalSearches}`);
+            console.log(`=============================================\n`);
         }
 
-        const rowsToShow = res.rows.slice(0, daysLimit);
-        
-        let totalVisits = 0;
-        let totalUnique = 0;
-        let totalSearches = 0;
-
-        rowsToShow.forEach(row => {
-            const uniqueUsers = row.uniqueIps ? JSON.parse(row.uniqueIps).length : 0;
-            totalVisits += (row.visits || 0);
-            totalUnique += uniqueUsers;
-            totalSearches += (row.searches || 0);
-            
-            console.log(`  Date: ${row.date}`);
-            console.log(`    Total Visits:    ${row.visits || 0}`);
-            console.log(`    Unique Visitors: ${uniqueUsers}`);
-            console.log(`    Searches:   ${row.searches || 0}`);
-            console.log('---------------------------------------------');
-        });
-        
-        console.log(`\nSOMMARIO TOTALI (Ultimi ${rowsToShow.length} giorni registrati)`);
-        console.log(`=============================================`);
-        console.log(`    Visite Totali:    ${totalVisits}`);
-        console.log(`    Visitatori Unici: ${totalUnique} (stimati)`);
-        console.log(`    Total Searches:  ${totalSearches}`);
-        console.log(`=============================================\n`);
-
+        const { fetchTursoUsage, TURSO_LIMITS } = await import('./services/quotaService.js');
+        const tursoUsage = await fetchTursoUsage();
+        if (tursoUsage) {
+            console.log(`=============================================`);
+            console.log(`   TURSO CLOUD QUOTA LIVE USAGE`);
+            console.log(`=============================================`);
+            console.log(`  Rows Read:    ${tursoUsage.rowsRead.toLocaleString()} / ${TURSO_LIMITS.ROWS_READ.toLocaleString()} (${tursoUsage.pctRead}%)`);
+            console.log(`  Rows Written: ${tursoUsage.rowsWritten.toLocaleString()} / ${TURSO_LIMITS.ROWS_WRITTEN.toLocaleString()} (${tursoUsage.pctWritten}%)`);
+            console.log(`  Storage Sync: ${(tursoUsage.bytesSynced / 1024 / 1024).toFixed(1)} MB / 3.0 GB (${tursoUsage.pctSynced}%)`);
+            console.log(`  Status:       ${tursoUsage.isCritical ? '⚠️ SOGLIA CRITICA (>80%)' : '✅ NORMALE (Entro i limiti)'}`);
+            console.log(`=============================================\n`);
+        }
     } catch (e) {
         console.error('DB Read Error:', e.message);
     }
