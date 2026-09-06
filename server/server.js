@@ -41,12 +41,64 @@ const slugify = (text) => {
 };
 
 import { sync } from './sync/index.js';
-import { cities } from './cities.js';
 import { securityHeaders, rateLimiter } from './middlewares/security.js';
 import { analyticsMiddleware, trackStaticVisit, setAnalyticsDb } from './middlewares/analytics.js';
 import { globalErrorHandler } from './middlewares/errorHandler.js';
 import { timeoutMiddleware } from './middlewares/timeout.js';
 import { setupApiRoutes } from './routes/api.js';
+
+const citiesDataPath = path.join(process.cwd(), 'server', 'data', 'cities.json');
+const citiesData = JSON.parse(fs.readFileSync(citiesDataPath, 'utf8'));
+const cities = citiesData.map(c => c.name);
+
+const REGEX_EXPLORE = /^\/(it|en)\/(esplora|explore)\/?$/;
+const REGEX_CITY = /^\/(it|en)\/(citta|city)\/([^/]+)\/?(?:([^/]+)\/?)?$/;
+const REGEX_HOME_LANG = /^\/(it|en)(?:\/([^/]+))?\/?$/;
+const REGEX_LANG_PREFIX = /^\/(it|en)/;
+
+const itToEnCities = Object.freeze({
+    'roma': 'rome',
+    'milano': 'milan',
+    'napoli': 'naples',
+    'venezia': 'venice',
+    'firenze': 'florence',
+    'torino': 'turin',
+    'genova': 'genoa',
+    'padova': 'padua',
+    'siracusa': 'syracuse',
+    'mantova': 'mantua'
+});
+
+const enToItCities = Object.freeze({
+    'rome': 'roma',
+    'milan': 'milano',
+    'naples': 'napoli',
+    'venice': 'venezia',
+    'florence': 'firenze',
+    'turin': 'torino',
+    'genoa': 'genova',
+    'padua': 'padova',
+    'syracuse': 'siracusa',
+    'mantua': 'mantova'
+});
+
+const enToFuel = Object.freeze({
+    'Petrol': 'Benzina',
+    'Diesel': 'Gasolio',
+    'LPG': 'GPL',
+    'CNG': 'Metano',
+    'petrol': 'Benzina',
+    'diesel': 'Gasolio',
+    'lpg': 'GPL',
+    'cng': 'Metano'
+});
+
+const fuelToEn = Object.freeze({
+    'Benzina': 'Petrol',
+    'Gasolio': 'Diesel',
+    'GPL': 'LPG',
+    'Metano': 'CNG'
+});
 
 let isReady = false;
 const app = express();
@@ -254,19 +306,6 @@ async function initServer() {
         setupApiRoutes(app, db);
 
         // --- SITEMAP ---
-const itToEnCities = {
-    'roma': 'rome',
-    'milano': 'milan',
-    'napoli': 'naples',
-    'venezia': 'venice',
-    'firenze': 'florence',
-    'torino': 'turin',
-    'genova': 'genoa',
-    'padova': 'padua',
-    'siracusa': 'syracuse',
-    'mantova': 'mantua'
-};
-
 const sitemapCaches = {
     index: null,
     it: null,
@@ -479,29 +518,15 @@ app.use((req, res, next) => {
     next();
 });
 
-const enToItCities = {
-    'rome': 'roma',
-    'milan': 'milano',
-    'naples': 'napoli',
-    'venice': 'venezia',
-    'florence': 'firenze',
-    'turin': 'torino',
-    'genoa': 'genova',
-    'padua': 'padova',
-    'syracuse': 'siracusa',
-    'mantua': 'mantova'
-};
-
 const htmlCache = new Map();
 
 app.use(async (req, res) => {
     trackStaticVisit(req);
-    let indexPath = path.join(distPath, 'index.html');
+    const indexPath = path.join(distPath, 'index.html');
     
-    const exploreMatch = req.path.match(/^\/(it|en)\/(esplora|explore)\/?$/);
-    const cityMatch = req.path.match(/^\/(it|en)\/(citta|city)\/([^/]+)\/?(?:([^/]+)\/?)?$/);
-    let isHome = req.path === '/' || req.path.match(/^\/(it|en)(?:\/([^/]+))?\/?$/);
-    let homeMatch = isHome ? (req.path === '/' ? null : req.path.match(/^\/(it|en)(?:\/([^/]+))?\/?$/)) : null;
+    const exploreMatch = req.path.match(REGEX_EXPLORE);
+    const cityMatch = req.path.match(REGEX_CITY);
+    const homeMatch = req.path === '/' ? null : req.path.match(REGEX_HOME_LANG);
     
     let rawFuel = req.query.fuel || req.query.carburante;
     
@@ -512,13 +537,11 @@ app.use(async (req, res) => {
     }
     
     if (!rawFuel) rawFuel = 'Benzina';
-    const enToFuel = { 'Petrol': 'Benzina', 'Diesel': 'Gasolio', 'LPG': 'GPL', 'CNG': 'Metano' };
-    const fuelToEn = { 'Benzina': 'Petrol', 'Gasolio': 'Diesel', 'GPL': 'LPG', 'Metano': 'CNG' };
     
     // Normalize to IT first
     if (enToFuel[rawFuel]) rawFuel = enToFuel[rawFuel];
     
-    const lang = cityMatch ? cityMatch[1] : (exploreMatch ? exploreMatch[1] : (req.path.match(/^\/(it|en)/) ? req.path.match(/^\/(it|en)/)[1] : 'it'));
+    const lang = cityMatch ? cityMatch[1] : (exploreMatch ? exploreMatch[1] : (req.path.match(REGEX_LANG_PREFIX) ? req.path.match(REGEX_LANG_PREFIX)[1] : 'it'));
     const displayFuel = lang === 'en' ? (fuelToEn[rawFuel] || rawFuel) : rawFuel;
     
     const isHomePage = req.path === '/' || (homeMatch && !exploreMatch && !cityMatch);
