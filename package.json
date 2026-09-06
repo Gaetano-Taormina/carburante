@@ -1,7 +1,7 @@
 {
   "name": "fuelfinder-italy",
   "private": true,
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "Trova i distributori di carburante più economici in Italia",
   "keywords": [
     "carburante",
