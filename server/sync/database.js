@@ -26,8 +26,11 @@ export async function initSchema(db) {
             UNIQUE(id_impianto, desc_carburante, is_self)
         );`,
       `CREATE INDEX IF NOT EXISTS idx_stations_lat_lng ON stations(latitudine, longitudine);`,
+      `CREATE INDEX IF NOT EXISTS idx_stations_comune ON stations(comune COLLATE NOCASE);`,
       `CREATE INDEX IF NOT EXISTS idx_prices_impianto ON prices(id_impianto);`,
       `CREATE INDEX IF NOT EXISTS idx_prices_carburante ON prices(desc_carburante);`,
+      `CREATE INDEX IF NOT EXISTS idx_prices_fuel_impianto ON prices(desc_carburante, id_impianto, is_self, prezzo);`,
+      `CREATE INDEX IF NOT EXISTS idx_prices_carburante_nocase ON prices(desc_carburante COLLATE NOCASE, id_impianto, prezzo);`,
   ], "write");
 }
 

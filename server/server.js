@@ -591,35 +591,23 @@ app.use(async (req, res) => {
                 const dbFuelQuery = enToItFuel[rawFuel.toLowerCase()] || rawFuel;
 
                 try {
-                    const aggResult = await db.execute({
-                        sql: `SELECT MIN(p.prezzo) as minPrice, MAX(p.prezzo) as maxPrice, COUNT(DISTINCT s.id) as stationCount
+                    const cityQueryRes = await db.execute({
+                        sql: `SELECT s.nome_impianto, s.indirizzo, s.latitudine, s.longitudine, p.prezzo
                               FROM stations s
                               INNER JOIN prices p ON s.id = p.id_impianto
-                              WHERE s.comune = ? COLLATE NOCASE AND p.desc_carburante = ? COLLATE NOCASE`,
+                              WHERE s.comune = ? COLLATE NOCASE AND p.desc_carburante = ? COLLATE NOCASE
+                              ORDER BY p.prezzo ASC`,
                         args: [cityCap, dbFuelQuery]
                     });
-                    if (aggResult.rows && aggResult.rows.length > 0 && aggResult.rows[0].minPrice) {
+                    const rows = cityQueryRes.rows || [];
+                    if (rows.length > 0) {
                         aggregateData = {
-                            minPrice: aggResult.rows[0].minPrice,
-                            maxPrice: aggResult.rows[0].maxPrice,
-                            stationCount: aggResult.rows[0].stationCount
+                            minPrice: rows[0].prezzo,
+                            maxPrice: rows[rows.length - 1].prezzo,
+                            stationCount: rows.length
                         };
-
-                        const minRes = await db.execute({
-                            sql: `SELECT s.nome_impianto, s.indirizzo, s.latitudine, s.longitudine
-                                  FROM stations s INNER JOIN prices p ON s.id = p.id_impianto
-                                  WHERE s.comune = ? COLLATE NOCASE AND p.desc_carburante = ? COLLATE NOCASE AND p.prezzo = ? LIMIT 1`,
-                            args: [cityCap, dbFuelQuery, aggregateData.minPrice]
-                        });
-                        if (minRes.rows.length > 0) minStation = minRes.rows[0];
-
-                        const maxRes = await db.execute({
-                            sql: `SELECT s.nome_impianto, s.indirizzo, s.latitudine, s.longitudine
-                                  FROM stations s INNER JOIN prices p ON s.id = p.id_impianto
-                                  WHERE s.comune = ? COLLATE NOCASE AND p.desc_carburante = ? COLLATE NOCASE AND p.prezzo = ? LIMIT 1`,
-                            args: [cityCap, dbFuelQuery, aggregateData.maxPrice]
-                        });
-                        if (maxRes.rows.length > 0) maxStation = maxRes.rows[0];
+                        minStation = rows[0];
+                        maxStation = rows[rows.length - 1];
                     }
                 } catch (e) {
                     console.error("Errore query aggregateOffer per SEO:", e);

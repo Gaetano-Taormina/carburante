@@ -41,6 +41,14 @@ async function migrate() {
         `);
         console.log("[INFO] Tabella 'prices' verificata/creata con successo.");
 
+        // Indici per velocizzare ricerche geografiche e azzerare Full Table Scan su Turso
+        await client.execute(`CREATE INDEX IF NOT EXISTS idx_stations_coords ON stations(latitudine, longitudine);`);
+        await client.execute(`CREATE INDEX IF NOT EXISTS idx_stations_comune ON stations(comune COLLATE NOCASE);`);
+        await client.execute(`CREATE INDEX IF NOT EXISTS idx_prices_impianto ON prices(id_impianto);`);
+        await client.execute(`CREATE INDEX IF NOT EXISTS idx_prices_fuel_impianto ON prices(desc_carburante, id_impianto, is_self, prezzo);`);
+        await client.execute(`CREATE INDEX IF NOT EXISTS idx_prices_carburante_nocase ON prices(desc_carburante COLLATE NOCASE, id_impianto, prezzo);`);
+        console.log("[INFO] Indici di performance verificati/creati con successo.");
+
         console.log("[SUCCESS] Migrazione completata con successo!");
         process.exit(0);
     } catch (error) {
