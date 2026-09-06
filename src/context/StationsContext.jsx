@@ -1,6 +1,7 @@
 import { createContext, useState, useEffect, useContext, useMemo, useCallback } from 'react';
 import { useSearchParams, useParams, useNavigate } from 'react-router-dom';
 import useSWR from 'swr';
+import { registerWebMcpTools } from '../services/webMcpService';
 
 const StationsContext = createContext();
 
@@ -141,6 +142,20 @@ export const StationsProvider = ({ children }) => {
       window.open(`https://www.google.com/maps/dir/?api=1${originParam}&destination=${station.lat},${station.lng}`, '_blank');
     }
   }, [userPos]);
+
+  // Registrazione strumenti WebMCP per agenti AI nativi (Chrome 146+)
+  useEffect(() => {
+    registerWebMcpTools({
+      onSearchLocation: async (loc) => {
+        setLocationStr(loc);
+        return { location: loc };
+      },
+      onSetFuel: (f) => setFuelType(f),
+      onSetRadius: (r) => setRadius(r),
+      onSetService: (s) => setServiceType(s),
+      onNavigateStation: (st) => handleNavigation(st)
+    });
+  }, [setFuelType, handleNavigation, setRadius, setServiceType, setLocationStr]);
 
   const contextValue = useMemo(() => ({
       stations, totalStations,

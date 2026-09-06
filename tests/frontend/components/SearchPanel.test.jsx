@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import SearchPanel from '../../../src/components/SearchPanel';
 import { BrowserRouter } from 'react-router-dom';
@@ -28,7 +28,6 @@ vi.mock('../../../src/components/search/Filters', () => ({
 
 describe('SearchPanel Component - Test Comportamentale', () => {
   it('mostra il messaggio "I dati sono pronti." quando non ci sono stazioni', () => {
-    // Simuliamo che il Context ritorni un array vuoto
     vi.spyOn(StationsContext, 'useStations').mockReturnValue({
       stations: [],
       totalStations: 0
@@ -40,16 +39,12 @@ describe('SearchPanel Component - Test Comportamentale', () => {
       </BrowserRouter>
     );
 
-    // Verifichiamo che i figli siano renderizzati
     expect(screen.getByTestId('location-input-mock')).toBeInTheDocument();
     expect(screen.getByTestId('filters-mock')).toBeInTheDocument();
-
-    // Verifichiamo il comportamento della UI: deve mostrare il messaggio di base
     expect(screen.getByText('I dati sono pronti.')).toBeInTheDocument();
   });
 
   it('mostra il numero di stazioni trovate se la ricerca produce risultati', () => {
-    // Simuliamo che l'utente abbia cercato Roma e il Context ritorni 3 stazioni
     vi.spyOn(StationsContext, 'useStations').mockReturnValue({
       stations: [{ id: 1 }, { id: 2 }, { id: 3 }],
       totalStations: 10
@@ -61,7 +56,6 @@ describe('SearchPanel Component - Test Comportamentale', () => {
       </BrowserRouter>
     );
 
-    // Verifichiamo il comportamento: deve mostrare "Trovati 3 distributori." e "su 10"
     expect(screen.getByText(/Trovati/i)).toBeInTheDocument();
     expect(screen.getByText('3')).toBeInTheDocument();
     expect(screen.getByText(/su 10/i)).toBeInTheDocument();
@@ -83,5 +77,23 @@ describe('SearchPanel Component - Test Comportamentale', () => {
     expect(screen.getByText(/Trovati/i)).toBeInTheDocument();
     expect(screen.getByText('2')).toBeInTheDocument();
     expect(screen.queryByText(/su/i)).not.toBeInTheDocument();
+  });
+
+  it('previene il submit standard del form', () => {
+    vi.spyOn(StationsContext, 'useStations').mockReturnValue({
+      stations: [],
+      totalStations: 0
+    });
+
+    render(
+      <BrowserRouter>
+        <SearchPanel />
+      </BrowserRouter>
+    );
+
+    const form = screen.getByRole('form');
+    expect(form).toBeInTheDocument();
+    expect(form).toHaveAttribute('toolname', 'search_fuel_stations');
+    fireEvent.submit(form);
   });
 });

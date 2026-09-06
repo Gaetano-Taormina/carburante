@@ -207,11 +207,52 @@ describe('StationsContext - Fuel Actions & Data Fetching', () => {
     renderWithProvider(['/it/']);
 
     act(() => {
-      fireEvent.click(screen.getByText('Set Pos')); 
+      fireEvent.click(screen.getByText('Set Pos'));
     });
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalled();
     }, { interval: 5 });
   });
+
+  it('registers WebMCP tools and handles tool callback execution within provider', async () => {
+    const registeredTools = {};
+    Object.defineProperty(global.navigator, 'modelContext', {
+      value: {
+        registerTool: vi.fn((toolDef) => {
+          registeredTools[toolDef.name] = toolDef;
+        })
+      },
+      configurable: true,
+      writable: true
+    });
+
+    renderWithProvider(['/it/']);
+
+    expect(registeredTools['search_fuel_stations']).toBeDefined();
+    await act(async () => {
+      const res = await registeredTools['search_fuel_stations'].execute({
+        location: 'Torino',
+        fuelType: 'GPL',
+        radius: 10,
+        serviceType: '0'
+      });
+      expect(res.location).toBe('Torino');
+    });
+
+    await act(async () => {
+      const res = await registeredTools['filter_fuel_type'].execute({ fuelType: 'Metano' });
+      expect(res.selectedFuel).toBe('Metano');
+    });
+
+    await act(async () => {
+      const res = await registeredTools['get_station_directions'].execute({
+        station: { lat: 45.0, lng: 7.6, brand: 'Eni' }
+      });
+      expect(res.success).toBe(true);
+    });
+
+    delete global.navigator.modelContext;
+  });
 });
+

@@ -57,6 +57,7 @@ export default function LocationAutocomplete({
                 onFocus={handleFocus}
                 onKeyDown={handleKeyDown}
                 placeholder={t('ph_location')} 
+                toolparamdescription="Comune, indirizzo o CAP italiano (es. Roma, Milano, Napoli, Firenze)"
                 className="input-field"
             />
             {showSuggestions && suggestions.length > 0 && (
